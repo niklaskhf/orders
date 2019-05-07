@@ -30,6 +30,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
+
 @RepositoryRestController
 public class OrdersController {
     private final Logger LOG = LoggerFactory.getLogger(getClass());
@@ -120,7 +121,9 @@ public class OrdersController {
             return savedOrder;
         } catch (TimeoutException e) {
             throw new IllegalStateException("Unable to create order due to timeout from one of the services.", e);
-        } catch (InterruptedException | IOException | ExecutionException e) {
+        } catch (InterruptedException e) {
+            throw new IllegalStateException(e.getMessage());
+        } catch (IOException | ExecutionException e) {
             throw new IllegalStateException("Unable to create order due to unspecified IO error.", e);
         }
     }

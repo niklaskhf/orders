@@ -2,6 +2,8 @@ package works.weave.socks.orders.services;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,7 @@ import java.util.List;
 import java.util.concurrent.Future;
 
 import static org.springframework.hateoas.MediaTypes.HAL_JSON;
+
 
 @Service
 public class AsyncGetService {
@@ -72,6 +75,7 @@ public class AsyncGetService {
     }
 
     @Async
+    @HystrixCommand(fallbackMethod = "getDataList_Fallback")
     public <T> Future<List<T>> getDataList(URI url, ParameterizedTypeReference<List<T>> type) throws
             InterruptedException, IOException {
         RequestEntity<Void> request = RequestEntity.get(url).accept(MediaType.APPLICATION_JSON).build();
@@ -79,6 +83,13 @@ public class AsyncGetService {
         List<T> body = restProxyTemplate.getRestTemplate().exchange(request, type).getBody();
         LOG.debug("Received: " + body.toString());
         return new AsyncResult<>(body);
+    }
+
+    @Async
+    public <T> Future<List<T>> getDataList_Fallback(URI url, ParameterizedTypeReference<List<T>> type) throws
+            InterruptedException, IOException {
+        LOG.debug("Circuit Breaker in getDataList_Fallback");
+        throw new InterruptedException("Circuit breaker triggered");
     }
 
     @Async

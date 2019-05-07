@@ -40,13 +40,5 @@ tag_and_push_all() {
     done;
 }
 
-# Push snapshot when in master
-if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
-    tag_and_push_all master-${COMMIT:0:8}
-fi;
+tag_and_push_all latest
 
-# Push tag and latest when tagged
-if [ -n "$TRAVIS_TAG" ]; then
-    tag_and_push_all ${TRAVIS_TAG}
-    tag_and_push_all latest
-fi;
